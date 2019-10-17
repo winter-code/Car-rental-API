@@ -27,16 +27,14 @@ const CarsController = require('../controllers/cars');
 
 router.post('/admin/addCar', check_auth, CarsController.cars_add);
 router.post('/admin/deleteCar', check_auth, CarsController.cars_delete);
-router.post('/admin/update', check_auth, CarsController.cars_update);
-router.post('/viewCars', CarsController.cars_view);
+router.post('/admin/updateCar', check_auth, CarsController.cars_update);
+router.post('/filterCar', CarsController.cars_view);
 
 
 //book car
-router.post('/bookCar', check_auth, 
-	 CarsController.cars_book	
-);
-router.post('/showCarDetails',CarsController.cars_show_details);
-router.post('/showMyCarBookings', check_auth,CarsController.cars_show_booking);
+router.post('/bookCar', check_auth, CarsController.cars_book);
+router.post('/displayCarDetails',CarsController.cars_show_details);
+router.post('/showMyData', check_auth,CarsController.cars_show_booking);
 
 
 

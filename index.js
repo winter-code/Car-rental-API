@@ -7,19 +7,18 @@ const url = 'mongodb+srv://arpana11:arpana123@arpana11-ganza.mongodb.net/test?re
 
 mongoose.Promise = global.Promise;
 
-mongoose.connect(url, { useNewUrlParser: true });
+mongoose.connect(url, { useNewUrlParser: true});
+
 var db = mongoose.connection; 
 db.on('error', function (err) {
     throw err
 });
 db.once("open", ()=> {
-	console.log("Connected to DB--- ");
+	console.log("--- Connected to DB --- ");
 })
 
 app.get('/',function(req,res){
-	res.send('Hello!');
-	var d = new Date();
-	console.log(d);
+	res.send('Server is ready. To test the API, open Postman. \n Welcome!!');
 }) 
 
 var route = require('./Routes/carroutes.js');
