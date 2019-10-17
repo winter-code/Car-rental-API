@@ -3,8 +3,8 @@ var Schema = mongoose.Schema;
 
 var carSchema = new mongoose.Schema({
     carNumber : String,
-    model : String,
-    seatCapacity : Number,
+    carModel : String,
+    noOfSeats : Number,
     rentPerDay : Number,
     currentAvailable : String,
     dateOfIssue : Date,

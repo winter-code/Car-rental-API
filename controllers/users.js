@@ -10,9 +10,23 @@ const saltrounds = 10;
 
 router.use(bodyParser.json());
 
-exports.sign_up = function(req,res){
 
+exports.sign_up = async function(req,res){
     let name = req.body.username;
+    let temp = await new Promise(function(resolve,reject){
+        userModel.find({username:name}, function(err,val){
+            if(err){ throw err}
+            resolve(val);
+        })
+    })
+
+    if(temp.length != 0){
+        res.json({
+            "status":"Username already exists"
+        })
+        return;
+    }
+    
     let password = req.body.password;
     console.log(name,password);
     bcrypt.hash(password, saltrounds, function(err, hash){
@@ -20,10 +34,13 @@ exports.sign_up = function(req,res){
         var user = new userModel({
             username: req.body.username,
             password: hash
-    });
+        });
         user.save(function(err){
-            if(err)
+            if(err){
+                console.log('Error');
                 throw err;
+            }
+                
             console.log('User Saved!');
         });
         res.json(user);

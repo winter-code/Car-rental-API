@@ -10,13 +10,28 @@ router.use(bodyParser.json());
 var carModel = require('../Models/carmodel.js');
 var userModel = require('../Models/usermodel.js');
 
+function check(car) {
+    
+
+    if (car.length==0){
+        
+        return 1;
+    }
+    if (car[0].currentAvailable=="false")
+    {
+        
+        return 2;
+    }
+    return 0;
+}
+
 exports.cars_add = (req,res)=>{
     console.log(req.body);
     console.log('HI! Thank you for adding a car!');
     var car = new carModel({
         carNumber: req.body.carNumber,
-        model: req.body.model,
-        seatCapacity:req.body.seatCapacity,
+        carModel: req.body.carModel,
+        noOfSeats:req.body.noOfSeats,
         rentPerDay:req.body.rentPerDay,
         currentAvailable: req.body.currentAvailable
     });
@@ -31,7 +46,32 @@ exports.cars_add = (req,res)=>{
     });
 }
 
-exports.cars_delete = (req,res)=>{
+exports.cars_delete = async (req,res)=>{
+    var car_to_delete = await new Promise(function(resolve, reject) {
+        carModel.find({carNumber : req.body.carNumber}, function(err, dat){
+            if(err){ throw err;}
+            resolve(dat)
+        })
+    })
+    console.log(car_to_delete)
+    var x = check(car_to_delete)
+    console.log(x)
+    if (x==1){
+        
+        res.json({
+            "status" : "Car not found."
+        })
+        return
+    }
+    else if(x==2){
+        res.json({
+            "status" : "Booked car cannot be deleted/updated",
+            "result" : "car not deleted"
+        })
+    return
+    }
+    
+    
     carModel.deleteOne({carNumber : req.body.carNumber},function(){
         console.log("Deleted a car with number", req.body.carNumber);
     }).exec();
@@ -41,7 +81,30 @@ exports.cars_delete = (req,res)=>{
     });
 }
 
-exports.cars_update = (req,res)=>{
+exports.cars_update = async (req,res)=>{
+    var car_to_update = await new Promise(function(resolve, reject) {
+        carModel.find({carNumber : req.body.carNumber}, function(err, dat){
+            if(err){ throw err;}
+            resolve(dat)
+        })
+    })
+    console.log(car_to_update)
+    var x = check(car_to_update)
+    console.log(x)
+    if (x==1){
+        
+        res.json({
+            "status" : "Car not found."
+        })
+        return
+    }
+    else if(x==2){
+        res.json({
+            "status" : "Booked car cannot be deleted/updated",
+            "result" : "car not updated"
+        })
+    return
+    }
     carModel.updateOne({carNumber : req.body.carNumber},{currentAvailable : req.body.currentAvailable,
                                                          dateOfIssue : req.body.dateOfIssue,
                                                          dateOfReturn : req.body.dateOfReturn
@@ -62,9 +125,9 @@ exports.cars_view =async function(req,res){
 
     //filter to find cars with capacity entered in body
 
-    if(req.body.seatCapacity){
+    if(req.body.noOfSeats){
         obj = obj.filter(function(val){
-            if(req.body.seatCapacity == val.seatCapacity){
+            if(req.body.noOfSeats == val.noOfSeats){
                 return val;
             }
         })
@@ -80,15 +143,18 @@ exports.cars_view =async function(req,res){
         })
     }
 
-    //filter to find cars of specific model
+    //filter to find cars of specific carModel
 
-    if(req.body.model){
+    if(req.body.carModel){
         obj = obj.filter(function(val){
-            if(req.body.model == val.model){
+            if(req.body.carModel == val.carModel){
                 return val;
             }
         })
     }
+
+
+    //filter to find cars of a particular rent
 
     if(req.body.rentPerDay){
         obj = obj.filter((val)=>{
@@ -110,8 +176,7 @@ exports.cars_view =async function(req,res){
             if((date1 > date4) || (date3 < date2)){
                 return val;
             }}
-            else 
-            return val;
+            
         })
     }    
     //console.log(obj);
@@ -119,8 +184,8 @@ exports.cars_view =async function(req,res){
     data = obj.map(function(val){
         var temp = {
             "carNumber" : val.carNumber,
-            "model" : val.model,
-            "seatCapacity" : val.seatCapacity,
+            "carModel" : val.carModel,
+            "noOfSeats" : val.noOfSeats,
             "rentPerDay" : val.rentPerDay
         };
         return temp;
@@ -130,23 +195,36 @@ exports.cars_view =async function(req,res){
 }
 
 exports.cars_book = async function(req,res){
-                              console.log("ARPANA MEHTA is here")  ;      
+        console.log("Started process")  ;      
         let bookedCar = await carModel.find({carNumber: req.body.carNumber});
+        if(bookedCar.length==0) { 
+            res.json(
+                {
+                    "status" : "Car not found"
+
+                }
+            )
+            return
+        }
         console.log(bookedCar);
-        userModel.where({username: req.body.username}).updateOne({$push:{data: bookedCar}},function(){
-            console.log("car booked!");
-        }).exec(()=>{
-            carModel.updateOne({carNumber : req.body.carNumber},{currentAvailable : "false",
+        if (bookedCar[0].currentAvailable == "false"){
+            res.json({
+                "status" : " Not Available for booking",
+                "result" : "Try with something else!"
+            })
+            return
+        }
+        var update = await userModel.where({username: req.body.username}).updateOne({$push:{data: bookedCar}}).exec(()=>{
+            carModel.updateOne({carNumber : req.body.carNumber},{
+                currentAvailable : "false",
                 dateOfIssue : req.body.dateOfIssue,
                 dateOfReturn : req.body.dateOfReturn
-               }).exec(()=>console.log("Updated a car!"));
-               
+               }).exec(()=>console.log("Updated a car!")); 
                 res.json({
                         "status" : "OK",
                         "result" : "Customer booked a car which has been added to his record and system has been updated!"
                 })     
-        })
-                       
+        })            
 }
 
 exports.cars_show_details = async function(req,res){
@@ -165,8 +243,8 @@ exports.cars_show_details = async function(req,res){
        data = obj.map(function(val){
         var temp = {
             "carNumber" : val.carNumber,
-            "model" : val.model,
-            "seatCapacity" : val.seatCapacity,
+            "carModel" : val.carModel,
+            "noOfSeats" : val.noOfSeats,
             "rentPerDay" : val.rentPerDay,
             "dateOfIssue" :  val.dateOfIssue,
             "dateOfReturn" : val.dateOfReturn,
@@ -179,10 +257,10 @@ exports.cars_show_details = async function(req,res){
 }
 
 exports.cars_show_booking = (req,res)=>{
-    userModel.findOne({ username : req.body.username },function(err,doc){
-        console.log("doc found!");
+    userModel.findOne({ username : req.body.username },function(err,dat){
+        console.log(dat);
         if(err) throw err;
-        res.json(doc.data);
+        res.json(dat.data); 
     })
 }
 
