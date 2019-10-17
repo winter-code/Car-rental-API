@@ -45,8 +45,8 @@ app.use((error, req, res, next) => {
 		}
 	});
 });
-
-app.listen(8000,function(){
-    console.log('Running at 8000.');
+const PORT = process.env.PORT || 4000;
+app.listen(PORT,function(){
+    console.log('Running at %d.',PORT);
 })
 
