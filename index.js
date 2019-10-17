@@ -18,7 +18,9 @@ db.once("open", ()=> {
 })
 
 app.get('/',function(req,res){
-	res.send('Server is ready. To test the API, open Postman. \n Welcome!!');
+	res.set('Content-Type', 'text/html');
+	res.send(new Buffer('<h1 style="font-family: Helvetica; color: #808380;" > <center> Server is ready. To test the API, open Postman. </h3> <center> Welcome!!'));
+	
 }) 
 
 var route = require('./Routes/carroutes.js');
