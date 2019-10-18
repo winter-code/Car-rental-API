@@ -19,7 +19,7 @@ db.once("open", ()=> {
 
 app.get('/',function(req,res){
 	res.set('Content-Type', 'text/html');
-	res.send(new Buffer('<h1 style="font-family: Helvetica; color: #808380;" > <center> Server is ready. To test the API, open Postman. </h3> <center> < a href="https://www.getpostman.com/collections/7daf09dc9a4d8c77d40b" > POST COLLECTION LINK. </a> <H2 > Welcome!! </h2> '));
+	res.send(new Buffer('<h1 style="font-family: Helvetica; color: #808380;" > <center> Server is ready. To test the API, open Postman. </h3> <center> <a href="https://www.getpostman.com/collections/7daf09dc9a4d8c77d40b" > POST COLLECTION LINK. </a> </h1> <H2 > Welcome!! </h2> '));
 	
 }) 
 
